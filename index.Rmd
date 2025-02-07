@@ -43,11 +43,14 @@ Row {data-height=600px}
 
 ```{r, echo=FALSE}
 data <- data %>%
+  group_by(Year, Month) %>%
+  mutate(Total_Amount = sum(Amount, na.rm = TRUE)) %>%
+  ungroup() %>%
   mutate(Month_Num = match(Month, month.name),
          Year_Month = as.Date(paste(Year, Month_Num, "01", sep = "-"), "%Y-%m-%d"))
 
-p3 <- ggplot(data, aes(x = Year_Month, y = Amount, group = 1,
-                       text = paste("Año:", Year, "<br>Mes:", Month, "<br>Monto:", Amount, "millones USD"))) +
+p3 <- ggplot(data, aes(x = Year_Month, y = Total_Amount, group = 1,
+                       text = paste("Año:", Year, "<br>Mes:", Month, "<br>Monto:", Total_Amount, "millones USD"))) +
   geom_line(color = "#4E79A7", size = 0.8, alpha = 0.8) +
   geom_point(color = "#4E79A7", size = 1, alpha = 0.9) +
   labs(title = "Evolución Temporal de la Inversión China",
