@@ -1,5 +1,5 @@
 ---
-title: "Inversión y Construcción de China en Perú"
+title: "Inversión de China en Perú"
 output: 
   flexdashboard::flex_dashboard:
     orientation: rows
