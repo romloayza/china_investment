@@ -1,0 +1,95 @@
+---
+title: "Inversión y Construcción de China en Perú"
+output: 
+  flexdashboard::flex_dashboard:
+    orientation: rows
+    vertical_layout: scroll
+    social: menu
+    source_code: embed
+runtime: runtime
+---
+
+```{r setup, include=FALSE}
+library(flexdashboard)
+library(rio)
+library(plotly)
+library(ggplot2)
+library(dplyr)
+library(RColorBrewer)
+library(DT)
+```
+
+```{r data, include=FALSE}
+data <- import("inversion_china_peru.xlsx")
+```
+
+Row {data-height=600px}
+-------------------------------------
+
+### Datos de Inversión
+
+```{r, echo=FALSE}
+datatable(data, options = list(
+  pageLength = 10, 
+  scrollX = TRUE
+))
+
+```
+
+Row {data-height=600px}
+-------------------------------------
+
+### Evolución de la inversión
+
+```{r, echo=FALSE}
+data <- data %>%
+  mutate(Month_Num = match(Month, month.name),
+         Year_Month = as.Date(paste(Year, Month_Num, "01", sep = "-"), "%Y-%m-%d"))
+
+p3 <- ggplot(data, aes(x = Year_Month, y = Amount, group = 1,
+                       text = paste("Año:", Year, "<br>Mes:", Month, "<br>Monto:", Amount, "millones USD"))) +
+  geom_line(color = "#4E79A7", size = 0.8, alpha = 0.8) +
+  geom_point(color = "#4E79A7", size = 1, alpha = 0.9) +
+  labs(title = "Evolución Temporal de la Inversión China",
+       x = "Año",
+       y = "Monto (millones de dólares)") +
+  theme_minimal() +
+  scale_x_date(date_breaks = "1 year", date_labels = "%Y") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+ggplotly(p3, tooltip = "text")
+```
+
+Row {data-height=600px}
+-------------------------------------
+
+### Distribución por Sector
+
+```{r, echo=FALSE}
+p_tota <- data %>%
+  group_by(Sector) %>%
+  summarise(Total = sum(Amount, na.rm = TRUE)) %>%
+  mutate(Percentage = round(100 * Total / sum(Total), 1))
+
+colores_sobrios <- c("#4E79A7", "#F28E2B", "#E15759", "#76B7B2", "#59A14F", "#EDC949", "#B07AA1")
+
+p6_ly <- plot_ly(p_tota, 
+                 labels = ~Sector, 
+                 values = ~Total, 
+                 type = 'pie',
+                 textinfo = 'percent',
+                 insidetextfont = list(color = '#FFFFFF', size = 12),
+                 hoverinfo = 'label+value+percent',
+                 marker = list(colors = colores_sobrios, 
+                               line = list(color = '#FFFFFF', width = 1))) %>%
+  layout(title = "Distribución de la Inversión China por Sector",
+         showlegend = TRUE,
+         legend = list(x = 1.1, y = 0.5),
+         margin = list(l = 50, r = 150, t = 50, b = 50),
+         height = 600,
+         width = 1000)
+
+p6_ly
+```
+
+
